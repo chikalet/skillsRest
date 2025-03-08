@@ -1,61 +1,25 @@
-// package database
-
-// import (
-// 	"context"
-// 	"fmt"
-// 	"log"
-
-// 	"github.com/jackc/pgx/v5/pgxpool"
-// )
-
-// var DB *pgxpool.Pool
-
-// func Connect() error {
-// 	ctx := context.Background()
-
-// 	dbHost := "localhost"
-// 	dbPort := "5432"
-// 	dbUser := "postgres"
-// 	dbPassword := "root"
-// 	dbName := "test"
-
-// 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
-
-// 	config, err := pgxpool.ParseConfig(connStr)
-// 	if err != nil {
-// 		return fmt.Errorf("ошибка парсинга DSN: %v", err)
-// 	}
-
-// 	pool, err := pgxpool.NewWithConfig(ctx, config)
-// 	if err != nil {
-// 		return fmt.Errorf("ошибка подключения к БД: %v", err)
-// 	}
-
-// 	if err := pool.Ping(ctx); err != nil {
-// 		return fmt.Errorf("ошибка ping БД: %v", err)
-// 	}
-
-//		DB = pool
-//		log.Println("Успешно подключились к базе данных")
-//		return nil
-//	}
 package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 )
 
 var DB *pgxpool.Pool
 
-func Connect() error {
+func Connect() (*sql.DB, string, error) {
 	ctx := context.Background()
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_HOST"),
@@ -65,10 +29,32 @@ func Connect() error {
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
-		return fmt.Errorf("ошибка подключения к БД: %v", err)
+		return nil, "", fmt.Errorf("ошибка подключения к БД (pgxpool.New): %v", err)
 	}
 
-	DB = pool // Сохраняем пул соединений
-	log.Println("Успешно подключились к базе данных")
+	db := stdlib.OpenDBFromPool(pool)
+	if err := db.PingContext(ctx); err != nil {
+		pool.Close()
+		return nil, "", fmt.Errorf("ошибка проверки соединения с БД (sql.OpenDB): %v", err)
+	}
+
+	DB = pool
+	log.Println("Успешно подключились к базе данных (pgx)")
+	return db, dsn, nil
+}
+
+func RunMigrations(dbURL string, migrationsPath string) error {
+	migration, err := migrate.New(
+		"file://"+migrationsPath,
+		dbURL)
+	if err != nil {
+		return fmt.Errorf("ошибка создания клиента миграций: %w", err)
+	}
+
+	if err := migration.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("ошибка применения миграций: %w", err)
+	}
+
+	fmt.Println("Миграции успешно применены")
 	return nil
 }

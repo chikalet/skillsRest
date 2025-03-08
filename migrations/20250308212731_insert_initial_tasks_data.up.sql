@@ -1,0 +1,10 @@
+INSERT INTO tasks (title, description, status) VALUES ('Проверить Docker Compose', 'Убедиться, что все сервисы запускаются корректно', 'done');
+INSERT INTO tasks (title, description, status) VALUES ('Написать Dockerfile', 'Создать Dockerfile для сборки Go приложения', 'done');
+INSERT INTO tasks (title, description, status) VALUES ('Настроить базу данных', 'Поднять PostgreSQL в Docker Compose', 'done');
+INSERT INTO tasks (title, description, status) VALUES ('Реализовать API задач', 'Разработать endpoints для CRUD операций с задачами', 'in_progress');
+INSERT INTO tasks (title, description, status) VALUES ('Написать тесты для API', 'Покрыть тестами основные endpoints API задач', 'new');
+INSERT INTO tasks (title, description, status) VALUES ('Интегрировать с фронтендом', 'Подключить фронтенд к API задач', 'new');
+INSERT INTO tasks (title, description, status) VALUES ('Задокументировать API', 'Подготовить документацию по API для разработчиков', 'new');
+INSERT INTO tasks (title, description, status) VALUES ('Провести ревью кода', 'Организовать ревью кода API задач', 'in_progress');
+INSERT INTO tasks (title, description, status) VALUES ('Развернуть на production', 'Подготовить и выполнить развертывание на production окружении', 'new');
+INSERT INTO tasks (title, description, status) VALUES ('Оптимизировать запросы к БД', 'Проанализировать и оптимизировать SQL запросы к базе данных', 'in_progress');

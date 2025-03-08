@@ -18,17 +18,12 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/skillsRest /app/skillsRest
+COPY migrations ./migrations 
+RUN ls -la /app             
 RUN chmod +x /app/skillsRest
 
 EXPOSE 3000
 
 CMD sh -c "/app/skillsRest"
-# FROM alpine:latest
 
-# WORKDIR /app
 
-# COPY --from=builder /app/skillsRest /app/skillsRest
-
-# EXPOSE 3000
-
-# CMD ["./skillsRest"]

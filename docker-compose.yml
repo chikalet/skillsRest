@@ -1,27 +1,28 @@
 services:
   db:
-    image: postgres:16-alpine # Используем официальный образ PostgreSQL
+    image: postgres:16-alpine 
     ports:
-      - "5433:5432" # Пробрасываем порт 5432 с хоста в контейнер (для доступа к БД с хоста, необязательно)
+      - "5433:5432" 
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: test
     volumes:
-      - db_data:/var/lib/postgresql/data # Монтируем volume для хранения данных БД
+      - db_data:/var/lib/postgresql/data
 
   app:
-    build: . # Собираем образ из Dockerfile в текущей директории (корне проекта)
+    build: . 
     ports:
-      - "3000:3000" # Пробрасываем порт 3000 с хоста в контейнер
+      - "3000:3000" 
     environment:
-      DB_HOST: db # Имя сервиса 'db' из docker-compose.yml будет резолвиться в IP адрес контейнера PostgreSQL
+      DB_HOST: db
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: root
       DB_NAME: test
+      DATABASE_URL: postgresql://postgres:root@db:5432/test?sslmode=disable 
     depends_on:
-      - db # Запускаем 'app' только после запуска 'db'
+      - db 
 
 volumes:
-  db_data: # Определяем именованный volume для данных БД
+  db_data: 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -13,16 +14,18 @@ import (
 
 func main() {
 
-	if err := database.Connect(); err != nil {
+	db, dbURL, err := database.Connect()
+	if err != nil {
 		log.Fatalf("Ошибка подключения к базе данных: %v", err)
 	}
-	app := fiber.New()
+	defer db.Close()
 
-	// Подключаем middleware
-	// app.Use(logger.New())   // Логирование запросов
-	// app.Use(compress.New()) // Сжатие ответов
-	// app.Use(recover.New())  // Восстановление после паники
-	// app.Use(limiter.New())  // Лимит запросов для предотвращения DDOS атак
+	migrationsPath := "./migrations"
+	if err := database.RunMigrations(dbURL, migrationsPath); err != nil {
+		log.Fatalf("Ошибка при выполнении миграций: %v", fmt.Errorf("ошибка миграций: %w", err))
+	}
+
+	app := fiber.New()
 
 	transport.RegisterTaskRoutes(app)
 
