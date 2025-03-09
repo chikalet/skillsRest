@@ -1,6 +1,11 @@
 services:
   db:
     image: postgres:16-alpine 
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
     ports:
       - "5433:5432" 
     environment:
